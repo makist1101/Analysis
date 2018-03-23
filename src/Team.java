@@ -3,6 +3,7 @@ import java.util.*;
 
 public class Team{
 	public String name;
+	
 	public ArrayList<String[]> results;	
 	public ArrayList<int[]> formScoresHome, formScoresAway, formScores; //At all 3 this team is always left
 	public int scoresHome[][],	scoresAway[][],		scores[][]; //At scores this team is always left

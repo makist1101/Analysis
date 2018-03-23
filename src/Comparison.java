@@ -6,6 +6,7 @@ public class Comparison {
 	public Comparison(String name, int rating){
 		this.name=name;
 		this.rating=rating;
+		
 	}
 	public void print() {
 		System.out.println(rating+"\t"+name);
