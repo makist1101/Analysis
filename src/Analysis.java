@@ -18,7 +18,7 @@ public class Analysis {
 					outStuff=!true,//Create output file
 					test=!true;
 	
-	public static String pathToSrc = "/Users/makis/eclipse-workspace/Analysis/src/",
+	public static String pathToSrc = "/Users/makis/git/Analysis/src/",
 						pathToSrcFixtures = pathToSrc+"fixtures.today.csv",
 						pathToData = "http://www.football-data.co.uk/mmz4281/",
 						pathToFixtures = "http://www.football-data.co.uk/fixtures.csv",
