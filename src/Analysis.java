@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Analysis {
-	static boolean  downloadStuff=true, //Download results, fixtures
+	static boolean  downloadStuff=!true, //Download results, fixtures
 					outStuff=!true,//Create output file
 					test=!true;
 	
