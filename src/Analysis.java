@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -13,281 +14,283 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Analysis {
-	static boolean  downloadStuff= true, //Download results, fixtures
-					outStuff=!true,//Create output file
-					test=!true;
-	
-	public static String pathToSrc = "/Users/makis/git/Analysis/src/",
-						pathToSrcFixtures = pathToSrc+"fixtures.today.csv",
-						pathToData = "http://www.football-data.co.uk/mmz4281/",
-						pathToFixtures = "http://www.football-data.co.uk/fixtures.csv",
-						pathToOutput ="C:/Users/makis/Desktop/output.txt";
-	
-	List<Competition> competitions;
-	List<Comparison> fixtureWinRatings, fixtureOverRatings, fixtureBttsRatings;
-	
-	public Analysis(){
-		long startTimeStamp = System.currentTimeMillis();
-		String[] seasonsInput  = {"1617/","1718/"},
-				seasonsOutput = {".16",".17"},
-				seasons = {"16/17","17/18"},
-				/*
-				leaguesInput = {"E0","SC0","SP1","D1","I1", "F1","N1","B1","B1","P1","T1","G1",
-						"E1","SC1","SP2","D2","I2", "F2","E2","SC2","E3","SC3","EC"},
-				leaguesOutput = {"E1","SC1","SP1","D1","I1", "F1","N1","B1","B1","P1","T1","G1", 
-						"E2","SC2","SP2","D2","I2","F2","E3","SC3","E4","SC4","E5"};
-				 */
-		
-				leaguesInput = {"E0","SC0","SP1","D1","I1", "F1","N1","B1","B1","P1","T1","G1",
-						"E1","SP2","D2","I2", "F2"},
-				leaguesOutput = {"E1","SC1","SP1","D1","I1", "F1","N1","B1","B1","P1","T1","G1", 
-						"E2","SP2","D2","I2","F2"};
-		File folder = new File(pathToSrc);
-		File[] listOfFiles = folder.listFiles();
-		competitions = new ArrayList<Competition>();
-		fixtureWinRatings = new ArrayList<Comparison>();
-		fixtureOverRatings= new ArrayList<Comparison>();
-		fixtureBttsRatings = new ArrayList<Comparison>();
-		if(downloadStuff){
-			downloadFiles(pathToFixtures,pathToSrcFixtures);
-			for(int i=0;i<seasonsInput.length;i++){
-				for(int j=0;j<leaguesInput.length;j++){
-					downloadFiles(pathToData+seasonsInput[i]+leaguesInput[j]+".csv",
-							pathToSrc+leaguesOutput[j]+seasonsOutput[i]+".csv");
-				}
-			}
+class codeDivYear{
+	String codeDiv;
+	int yearMax=-1, yearMin=-1;
+	int timesUpdated=0;
+	codeDivYear(String codeDiv, int year){
+		this.codeDiv=codeDiv;
+		this.yearMin=year;
+		this.yearMax=year;		
+	}
+	public void checkYears() {
+		if((yearMax-yearMin)!=timesUpdated) {
+		 System.out.println(codeDiv+"->shit");
 		}
+	}
+	public void updateMinMax(int year){
+		if(year>yearMax)yearMax=year;
+		if(year<yearMin)yearMin=year;
+		timesUpdated++;
+	}
+}
+public class Analysis {
+
+	/*
+	 * team history
+	 * date 
+	 * comp abr 
+	 */
+	static boolean  downloadStuff=!true, 
+					outStuff=!true;
+	static int yearMax=20,yearMin=0;
+	List<Competition> competitions;
+	List<Comparison> fixtureWinRatings,
+					fixtureOverRatings, 
+					fixtureBttsRatings, 
+					fixtureCornerRatings;
+
+	public static void main(String[] args) {
 		if(outStuff){
 			try {
-				PrintStream out = null;
-				out = new PrintStream(new FileOutputStream(pathToOutput));
+				PrintStream out = out = new PrintStream(new FileOutputStream(Common.pathToOutput));
 				System.setOut(out);
 			} catch (FileNotFoundException e1) {e1.printStackTrace();}
 		}
-		for(int i=0; i<listOfFiles.length; i++){
-			String fileName=listOfFiles[i].getName();
-			if (listOfFiles[i].isFile() 
-					&& fileName.substring(fileName.lastIndexOf('.') + 1).equals("csv") 
-					&& !fileName.equalsIgnoreCase("fixtures.today.csv")){
-				String code=fileName.substring(0,fileName.indexOf('.')-1);
-				int div = Integer.valueOf(fileName.substring(fileName.indexOf('.')-1,fileName.indexOf('.')));
-				int year= Integer.valueOf(fileName.substring(fileName.indexOf('.')+1,fileName.lastIndexOf('.')));
-				//System.out.println(fileName+":"+ seasons[year-16]+":"+ code+":"+ div+":"+ year);
-				competitions.add(new Competition(pathToSrc+fileName, createName(fileName, seasons[year-16]), code, div, year));
-				
-			}	
+		Analysis analysis =new Analysis();
+	
+	
+	
+	}
+	
+	public Analysis(){
+		Files files = new Files();
+		long startTimeStamp = System.currentTimeMillis();
+		competitions = new ArrayList<Competition>();
+		List<File> listOfFiles = files.getData();
+		for (int i = 0; i < listOfFiles.size(); i++) {
+			CSVReader reader = new CSVReader(competitions, listOfFiles.get(i));
 		}
 		
-		createFixtures();
-		System.out.println("RunTime:"+(System.currentTimeMillis()-startTimeStamp)+"ms");
+		int matchCounter=0;
+		for(int i=0;i<competitions.size();i++)
+			matchCounter+=competitions.get(i).results.size();
+		System.out.println("Total matches:"+matchCounter);
 		
+		createFixtures();		
+		System.out.println("RunTime:" + (System.currentTimeMillis() - startTimeStamp) + "ms");
 		try {
 			userInterface();
-		} catch (IOException e) {e.printStackTrace();}
-	
-		for(int i=0;i< competitions.size();i++) {
-		//	if(competitions.get(i).year == 17)competitions.get(i).printManager(3);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
-		
 
-	private void createFixtures(){
-		for(int i=0;i<competitions.size();i++){
-			if(competitions.get(i).fixturesOutput.size()>0){
-				for(int j=0; j<competitions.get(i).fixturesOutput.size();j++){
-					String tempCodeDiv=null;
-					if(competitions.get(i).code.length()==2){
-						tempCodeDiv=competitions.get(i).code+competitions.get(i).div;
-					}
-					else{
-						tempCodeDiv=competitions.get(i).code+competitions.get(i).div+" ";
-					}
-					fixtureWinRatings.add(new Comparison(
-							tempCodeDiv+" "+
-							competitions.get(i).fixturesOutput.get(j).nameHome+"-"+
-							competitions.get(i).fixturesOutput.get(j).nameAway,
-							competitions.get(i).fixturesOutput.get(j).ratingWin));
-					fixtureOverRatings.add(new Comparison(
-							tempCodeDiv+" "+
-							competitions.get(i).fixturesOutput.get(j).nameHome+"-"+
-							competitions.get(i).fixturesOutput.get(j).nameAway,
-							competitions.get(i).fixturesOutput.get(j).ratingOver));
-					fixtureBttsRatings.add(new Comparison(
-							tempCodeDiv+" "+
-							competitions.get(i).fixturesOutput.get(j).nameHome+"-"+
-							competitions.get(i).fixturesOutput.get(j).nameAway,
-							competitions.get(i).fixturesOutput.get(j).ratingBtts));
+	public void createFixtures() {
+		ArrayList<Comparison> fixtureWinRatingsTemp = new ArrayList<Comparison>(),
+				fixtureOverRatingsTemp = new ArrayList<Comparison>(),
+				fixtureBttsRatingsTemp = new ArrayList<Comparison>(),
+				fixtureCornerRatingsTemp = new ArrayList<Comparison>();
+
+		for (int i = 0; i < competitions.size(); i++) {
+			if (competitions.get(i).fixtures != null && (competitions.get(i).year == 18 || competitions.get(i).year == 19))
+				if (competitions.get(i).fixtures.size() > 0) {
+					fixtureWinRatingsTemp.addAll(competitions.get(i).fixtureWinRatings);
+					fixtureOverRatingsTemp.addAll(competitions.get(i).fixtureOverRatings);
+					fixtureBttsRatingsTemp.addAll(competitions.get(i).fixtureBttsRatings);
+					fixtureCornerRatingsTemp.addAll(competitions.get(i).fixtureCornerRatings);
 				}
-			}		
 		}
-		sort(fixtureWinRatings);
-		sort(fixtureOverRatings);
-		sort(fixtureBttsRatings);
+		fixtureWinRatings = new ArrayList<Comparison>();
+		fixtureOverRatings = new ArrayList<Comparison>();
+		fixtureBttsRatings = new ArrayList<Comparison>();
+		fixtureCornerRatings = new ArrayList<Comparison>();
+		for (int i = 0; i < fixtureWinRatingsTemp.size(); i++) {
+			fixtureWinRatings.add(new Comparison(fixtureWinRatingsTemp.get(i)));
+			fixtureOverRatings.add(new Comparison(fixtureOverRatingsTemp.get(i)));
+			fixtureBttsRatings.add(new Comparison(fixtureBttsRatingsTemp.get(i)));
+			fixtureCornerRatings.add(new Comparison(fixtureCornerRatingsTemp.get(i)));
+		}
+		if (fixtureWinRatings.size() != fixtureOverRatings.size()
+				|| fixtureOverRatings.size() != fixtureBttsRatings.size()
+				|| fixtureBttsRatings.size() != fixtureCornerRatings.size())
+			System.out.println("Fuck");
+		Common.sort(fixtureWinRatings);
+		Common.sort(fixtureOverRatings);
+		Common.sort(fixtureBttsRatings);
+		Common.sort(fixtureCornerRatings);
 	}
-	
-	private void printFixtures(){
+
+	public void printFixtures(){
 			System.out.println("Fixtures Win Rating:");
-			printList(fixtureWinRatings);
+			Common.printList(fixtureWinRatings);
 			System.out.println();
 			System.out.println("Fixtures Over Rating:"+fixtureOverRatings.size());
-			printList(fixtureOverRatings);
+			Common.printList(fixtureOverRatings);
 			System.out.println();
-			//System.out.println("Fixtures Btts Rating:");
-			//printList(fixtureBttsRatings);
+			System.out.println("Fixtures Btts Rating:");
+			Common.printList(fixtureBttsRatings);
 			System.out.println();
-	}
+			System.out.println("Fixtures Corner Rating:");
+			Common.printList(fixtureCornerRatings);
+			System.out.println();
+	}			
 	
-	private void userInterface() throws IOException {
-		int loop =0 ;
-		while(loop!=100){
-		System.out.println(">>>>Options:");
-		System.out.println("1: CompetitionNamesCodeDiv");
-		System.out.println("2: Competition All Data ");
-		System.out.println("3: Competition Stats");
-		System.out.println("4: Competition Scores");
-		System.out.println("5: Competition All Team Stats");
-		System.out.println("6: Competition All Team Scores");
-		System.out.println("7: Competition All Form RatingsList");
-		System.out.println("8: Competition All Fixtures Stats");
-		System.out.println("9: Competition All Fixtures RatingsList");
-		System.out.println("10: Team All Data");
-		System.out.println("11: Today Fixtures");
-		System.out.println("12: AllCompetitionStats");
-		System.out.println("100: Exit");
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        int i=99;
-        System.out.println(">>>>>Choose:");
-        try{
-            i = Integer.parseInt(br.readLine());
-        }catch(NumberFormatException nfe){System.err.println("Invalid Format!");}
-        
-       
-	    if(i==100){
-	    	loop=i;
-	    }
-	    
-	    else if(i==11){
-        	printFixtures();
-        }
-	    else if(i==12){
-	    	for(int h=0;h<competitions.size();h++){
-	    		competitions.get(h).printManager(3);
-	    	}
-	    }
-        else if(i==1){
-        	printCompetitionNames();
-        }
-        else if(i!=10){
-        	 System.out.println("Give Competition CodeDiv:");
-             String codeDiv = br.readLine();
-        	competitions.get(findCompetition(codeDiv)).printManager(i);
-        }
-        else{
-        	 System.out.println("Give Competition CodeDiv:");
-             String codeDiv = br.readLine();
-        	competitions.get(findCompetition(codeDiv)).printManager(0);
-        	System.out.println("Give Team Name:");
-            String teamName = br.readLine();
-        	competitions.get(findCompetition(codeDiv)).printManager(teamName);
-        }
-        
-		}
-		
-	}
 	
-	private void printCompetitionNames(){
+	public int findCompetition(String codeDiv,int year){
 		for(int i=0;i<competitions.size();i++){
-			String tempCodeDiv=null;
-			if(competitions.get(i).code.length()==2){
-				tempCodeDiv=competitions.get(i).code+competitions.get(i).div;
-			}
-			else{
-				tempCodeDiv=competitions.get(i).code+competitions.get(i).div+" ";
-			}
-			System.out.println(i+": "+tempCodeDiv+" - "+competitions.get(i).name);
+			if(codeDiv.equalsIgnoreCase(competitions.get(i).code+competitions.get(i).div) && competitions.get(i).year==year)return i;
 		}
+		return -1;
 	}
-	
-	private int findCompetition(String name){
-		for(int i=0;i<competitions.size();i++){
-			if(name.equalsIgnoreCase(competitions.get(i).code+competitions.get(i).div) && competitions.get(i).year==17)return i;
+
+	public void printCompetitionsInfo() {
+		List<codeDivYear> cdyList = new ArrayList<codeDivYear>();
+		for (int i = 0; i < competitions.size(); i++) {
+			String tempCodeDiv = competitions.get(i).code + competitions.get(i).div;
+			int year = competitions.get(i).year;
+			for (int j = 0; j <= cdyList.size(); j++) {
+				if (j < cdyList.size()) {
+					if (tempCodeDiv.equals(cdyList.get(j).codeDiv)) {
+						cdyList.get(j).updateMinMax(year);
+						break;
+					}
+				} else if (cdyList.size() == j) {
+					cdyList.add(new codeDivYear(tempCodeDiv, year));
+					break;
+				}
+			}
 		}
-		throw new IllegalArgumentException("Wrong name");
+		for (int i = 0; i < cdyList.size(); i++) {
+			cdyList.get(i).checkYears();
+			System.out.println(cdyList.get(i).codeDiv + "->("+(cdyList.get(i).yearMax-cdyList.get(i).yearMin) +") "+cdyList.get(i).yearMin + " - " + cdyList.get(i).yearMax);
+		}
+		System.out.println();
 	}
-	
-	private void printCompetitionAll(String name){
-		int i = findCompetition(name);
-		competitions.get(i).printAll();
-	}
-	
-	private void printCompetitionAll(int i){
-		competitions.get(i).printAll();
-	}
-	
-	private String createName(String fileName, String season){
-		String div = ""+fileName.charAt(fileName.indexOf('.')-1);
-		String name=null;
-		switch(fileName.charAt(0)){
-			case 'E':name="England";break;
-			case 'S':{
-				if(fileName.charAt(1)=='C'){name="Scotland";}
-				else if (fileName.charAt(1)=='P'){name="Spain";}
+
+	public void userInterface() throws IOException {
+		int choice = -1, i = -1, j = -1, year = -1;
+		String codeDiv, teamName;
+		while (choice != 0) {
+			System.out.println("Options:");
+			System.out.println("1 ->Competitions Info");
+			System.out.println("2 ->Competition All Data ");
+			System.out.println("3 ->Competition Bet");
+			System.out.println("4 ->Competition Stats");
+			System.out.println("5 ->Competition Scores");
+			System.out.println("6 ->Competition All Ratings Lists");
+			System.out.println("7 ->Competition All Fixtures Stats");
+			System.out.println("8 ->Competition All Fixtures Ratings List");
+			System.out.println("9 ->Competition Team Names");
+			System.out.println("10->Competition All Team Stats");
+			System.out.println("11->Competition All Team Scores");
+			System.out.println("12->Competition Team All");
+			System.out.println("13->Today Fixtures");
+			System.out.println("0->Exit");
+			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+			while (true) {
+				System.out.println("Choose:");
+				try {
+					choice = Integer.parseInt(br.readLine());
+					if (choice < -1 && choice > 13)
+						System.out.println("Invalid Number!");
+					else
+						break;
+				} catch (NumberFormatException nfe) {
+					System.out.println("Invalid Format!");
+				}
+			}
+			
+			if (choice > 1 && choice < 13) {
+					while (true) {
+					System.out.println("Give Competition CodeDiv:");
+					codeDiv = br.readLine();
+					if (Common.checkCodeDiv(codeDiv)) {
+						break;
+					} else {
+						System.out.println("Invalid CodeDiv!");
+						printCompetitionsInfo();
+					}
+				}
+				while (true) {
+					System.out.println("Give Year:");
+					try {
+						year = Integer.parseInt(br.readLine());
+						i = findCompetition(codeDiv, year);
+						if (i != -1)
+							break;
+						else {
+							System.out.println("No info for this year!");
+							printCompetitionsInfo();
+						}
+						} catch (NumberFormatException nfe) {
+						System.out.println("Invalid Format!");
+					}
+				}
+
+				if (choice == 12) {
+					while (true) {
+						System.out.println("Give Team Name or ID:");
+						teamName = br.readLine();
+						try {
+							j = Integer.parseInt(teamName);
+						} catch (NumberFormatException nfe) {
+							if (j != -1)
+								j = competitions.get(i).findTeam(teamName);
+						}
+						if (j != -1 && j<competitions.get(i).teams.size())
+							break;
+						else {
+							System.out.println("Invalid Name!");
+							competitions.get(i).printTeamNames();
+						}
+					}
+				}
+			}
+
+			switch (choice) {
+			case 1:
+				printCompetitionsInfo();
 				break;
-			}
-			case 'D':name="Germany";break;
-			case 'I':name="Italy";break;
-			case 'F':name="France";break;
-			case 'N':name="Netherlands";break;
-			case 'B':name="Belgium";break;
-			case 'P':name="Portugal";break;
-			case 'T':name="Turkey";break;
-			case 'G':name="Greece";break;
-			default:System.out.println("Unknown League");
+			case 2:
+				competitions.get(i).printCompetitionAll();
+				break;
+			case 3:
+				competitions.get(i).printCompetitionBet();
+				break;
+			case 4:
+				competitions.get(i).printCompetitionStats();
+				break;
+			case 5:
+				competitions.get(i).printCompetitionScores();
+				break;
+			case 6:
+				competitions.get(i).printAllRatingsLists();
+				break;
+			case 7:
+				competitions.get(i).printAllFixturesStats();
+				break;
+			case 8:
+				competitions.get(i).printAllFixturesRatingsList();
+				break;
+			case 9:
+				competitions.get(i).printTeamNames();
+				break;
+			case 10:
+				competitions.get(i).printAllTeamStats();
+				break;
+			case 11:
+				competitions.get(i).printAllTeamScores();
+				break;
+			case 12:
+				competitions.get(i).printTeamAll(j);
+				break;
+			case 13:
+				printFixtures();
+			default:
+				break;
 			};
-		name+=" "+div+" "+season;
-		return name;
-	}
-	
-	private void printList(List<Comparison> list){
-		for(int i=0; i<list.size();i++){
-			list.get(i).print();
 		}
-	}
-	
-	private void downloadFiles(String inputPath, String outputPath){
-		URL website = null;
-		ReadableByteChannel rbc = null;
-		FileOutputStream fos = null;
-		try {
-			website = new URL(inputPath);
-		} catch (MalformedURLException e) {e.printStackTrace();}
-		try {
-			rbc = Channels.newChannel(website.openStream());
-		} catch (IOException e) {e.printStackTrace();}
-		try {
-			fos = new FileOutputStream(outputPath);
-		} catch (FileNotFoundException e) {e.printStackTrace();}
-		try {
-			fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
-		} catch (IOException e) {e.printStackTrace();}
-	}
-		
-	private void sort(List<Comparison> list){
-		boolean flag = true;
-		while ( flag )
-			{
-			flag= false;
-			for(int i=0;i<list.size()-1;i++){
-				if (list.get(i).rating<list.get(i+1).rating){
-					Comparison.swap(list.get(i), list.get(i+1));
-					flag = true; 									
-				} 
-			} 
-		}
-	}
-    
-	public static void main(String[] args) {
-		Analysis analysis = new Analysis();		
 	}
 }

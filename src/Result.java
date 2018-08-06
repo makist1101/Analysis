@@ -1,16 +1,10 @@
 
-public class Fixture {
-	int ratingWin=0,
-		ratingOver=0,
-		ratingBtts=0,
-		ratingCorners=0;
-	boolean hasData=false;
-
+public class Result {
 	String codeDiv,
 		date,
 		homeTeam,
 		awayTeam;
-
+	
 	int FTHG,
 		FTAG;
 	
@@ -43,14 +37,14 @@ public class Fixture {
 
 	public void transfer(String[] data) {
 		codeDiv=Common.fixCodeDiv(data[0]);
-		date=data[1];						if(date.contains("-"))System.out.println("Date With -");
+		date=data[1];							if(date.contains("-"))System.out.println("Date With -");
 		homeTeam=data[2];
 		awayTeam=data[3];
-		//FTHG=Integer.valueOf(data[4]);
-		//FTAG=Integer.valueOf(data[5]);
+		FTHG=Integer.valueOf(data[4]);
+		FTAG=Integer.valueOf(data[5]);
 		FTR=data[6];
-		//HTHG=Integer.valueOf(data[7]);
-		//HTAG=Integer.valueOf(data[8]);
+		HTHG=Integer.valueOf(data[7]);
+		HTAG=Integer.valueOf(data[8]);
 		HTR=data[9];
 		referee=data[10];
 		HS=Integer.valueOf(data[11]);
@@ -70,9 +64,10 @@ public class Fixture {
 		DODDS=Float.valueOf(data[25]);
 		OODDS=Float.valueOf(data[26]);
 		UODDS=Float.valueOf(data[27]);
-		}
-		
-	public Fixture(String[] data) {
-		transfer(data);
+	}
+	
+	
+	public Result(String[] data) {
+		transfer(data);		
 	}
 }
