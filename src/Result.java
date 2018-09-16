@@ -1,22 +1,15 @@
-
 public class Result {
 	String codeDiv,
 		date,
 		homeTeam,
-		awayTeam;
-	
-	int FTHG,
-		FTAG;
-	
-	String FTR;
-		
-	int HTHG,
-		HTAG;
-		
-	String	HTR,
+		awayTeam,
 		referee;
 	
-	int	HS,
+	int FTHG,
+		FTAG,
+		HTHG,
+		HTAG,
+		HS,
 		AS,
 		HST,
 		AST,
@@ -36,38 +29,48 @@ public class Result {
 		UODDS;
 
 	public void transfer(String[] data) {
-		codeDiv=Common.fixCodeDiv(data[0]);
-		date=data[1];							if(date.contains("-"))System.out.println("Date With -");
-		homeTeam=data[2];
-		awayTeam=data[3];
-		FTHG=Integer.valueOf(data[4]);
-		FTAG=Integer.valueOf(data[5]);
-		FTR=data[6];
-		HTHG=Integer.valueOf(data[7]);
-		HTAG=Integer.valueOf(data[8]);
-		HTR=data[9];
-		referee=data[10];
-		HS=Integer.valueOf(data[11]);
-		AS=Integer.valueOf(data[12]);
-		HST=Integer.valueOf(data[13]);
-		AST=Integer.valueOf(data[14]);
-		HC=Integer.valueOf(data[15]);
-		AC=Integer.valueOf(data[16]);
-		HF=Integer.valueOf(data[17]);
-		AF=Integer.valueOf(data[18]);
-		HY=Integer.valueOf(data[19]);
-		AY=Integer.valueOf(data[20]);
-		HR=Integer.valueOf(data[21]);
-		AR=Integer.valueOf(data[22]);
-		HODDS=Float.valueOf(data[23]);
-		AODDS=Float.valueOf(data[24]);
-		DODDS=Float.valueOf(data[25]);
-		OODDS=Float.valueOf(data[26]);
-		UODDS=Float.valueOf(data[27]);
+		codeDiv=Common.checkString(Common.fixCodeDiv(data[0]));
+		date=Common.checkString(data[1]);						
+		homeTeam=Common.checkString(data[2]);
+		awayTeam=Common.checkString(data[3]);
+		FTHG=Common.checkInt(data[4]);
+		FTAG=Common.checkInt(data[5]);
+		HTHG=Common.checkInt(data[6]);
+		HTAG=Common.checkInt(data[7]);
+		referee=Common.checkString(data[8]);
+		HS=Common.checkInt(data[9]);
+		AS=Common.checkInt(data[10]);
+		HST=Common.checkInt(data[11]);
+		AST=Common.checkInt(data[12]);
+		HC=Common.checkInt(data[13]);
+		AC=Common.checkInt(data[14]);
+		HF=Common.checkInt(data[15]);
+		AF=Common.checkInt(data[16]);
+		HY=Common.checkInt(data[17]);
+		AY=Common.checkInt(data[18]);
+		HR=Common.checkInt(data[19]);
+		AR=Common.checkInt(data[20]);
+		HODDS=Common.checkDouble(data[21]);
+		AODDS=Common.checkDouble(data[22]);
+		DODDS=Common.checkDouble(data[23]);
+		OODDS=Common.checkDouble(data[24]);
+		UODDS=Common.checkDouble(data[25]);
 	}
 	
 	
 	public Result(String[] data) {
+	try 
+		{
 		transfer(data);		
+		}
+		catch (NumberFormatException nfe) {System.out.println("Alert:Data input invalid format "+codeDiv+" "+date);}
+		
+		if (date.contains("-"))
+			System.out.println("Alert:Date with -  "+codeDiv+" "+date);
+		
+		if (codeDiv.equalsIgnoreCase("-1") || date.equalsIgnoreCase("-1") || homeTeam.equalsIgnoreCase("-1")
+				|| awayTeam.equalsIgnoreCase("-1")) {
+			System.out.println("Alert:Data input with -1 on basic info "+codeDiv+" "+date);
+		}
 	}
 }

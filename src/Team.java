@@ -31,7 +31,6 @@ public class Team {
 				teamResults.add(results.get(i));
 			}
 		}
-
 		int sizeFormTemp;
 		if (teamResults.size() < 5) {
 			sizeFormTemp = teamResults.size();
@@ -60,6 +59,7 @@ public class Team {
 		for (int i = 0; i < teamResults.size(); i++) {
 			stats.addResult(teamResults.get(i));
 		}
+
 		stats.createPer();
 		stats.createFormStats(formResultsHome, formResultsAway, formResults);
 	}

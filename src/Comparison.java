@@ -7,7 +7,8 @@ public class Comparison {
 	double ratingD=0;
 	String date="";
 	boolean hasData=false;
-
+	double[] ratingParts= {0.0,0.0};
+	//sum,count
 	public Comparison(Comparison copy) {
 		this.name = copy.name;
 		this.rating = copy.rating;
@@ -38,12 +39,33 @@ public class Comparison {
 		this.ratingD=ratingD;
 	}
 
+	public Comparison(String name, double[] ratingParts){
+		this.name=name;
+		this.ratingParts[0]=ratingParts[0];
+		this.ratingParts[1]=ratingParts[1];
+	}
+	public void printWithDate(String targetDate) {
+		if((hasData && Analysis.useFullFixtures) || (!hasData && Analysis.useEmptyFixtures)) {
+		String substring = date.substring(0, date.length() - 3);
+		if (targetDate != null) {
+			if (targetDate.equalsIgnoreCase(date) && substring.length() != 0)
+				System.out.println(rating + "\t" + substring + "\t" + name);
+		} else {
+			if (substring.length() != 0)
+				System.out.println(rating + "\t" + substring + "\t" + name);
+
+		}
+		}
+	}
+
 	public void print() {
+		if(ratingD==0)
 		System.out.println(rating+"\t"+name);
+		else printD();
 	}
 	
 	public void printD() {
-		System.out.println(Common.df11.format(ratingD)+"\t"+name);
+		System.out.println(Common.df12.format(ratingD)+"\t"+name);
 	}
 	
 	public static void swap(Comparison first, Comparison second){	
@@ -52,21 +74,25 @@ public class Comparison {
 		double tempD;
 		String tempDate;
 		boolean tempHasData;
+		
 		temp =  first.rating;
-		tempD = first.ratingD;
-		tempName = first.name;
-		tempDate=first.date;
-		tempHasData=first.hasData;
 		first.rating =  second.rating;
-		first.ratingD = second.ratingD;
-		first.name = second.name;
-		first.date=second.date;
-		first.date=second.date;
-		first.hasData=second.hasData;
 		second.rating = temp;
+		
+		tempD = first.ratingD;
+		first.ratingD = second.ratingD;
 		second.ratingD = tempD;
+		
+		tempName = first.name;
+		first.name = second.name;
 		second.name = tempName;
+		
+		tempDate=first.date;
+		first.date=second.date;
 		second.date=tempDate;
+		
+		tempHasData=first.hasData;
+		first.hasData=second.hasData;
 		second.hasData=tempHasData;
 	}
 }
